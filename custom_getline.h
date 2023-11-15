@@ -1,3 +1,5 @@
+/* custom_getline.h */
+
 #ifndef CUSTOM_GETLINE_H
 #define CUSTOM_GETLINE_H
 
