@@ -1,12 +1,10 @@
-/* simple_shell.c */
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
 #include <sys/wait.h>
-#include "custom_getline.h"  /* Include the custom_getline header */
 
+#define MAX_INPUT_SIZE 1024
 #define MAX_ARGS 64
 
 void display_prompt(void) {
@@ -50,7 +48,7 @@ void print_environment(void) {
 }
 
 int main(void) {
-    char *input;
+    char input[MAX_INPUT_SIZE];
     char *args[MAX_ARGS];
     char *token;
     int i;
@@ -58,9 +56,7 @@ int main(void) {
     while (1) {
         display_prompt();
 
-        input = custom_getline();  /* Use the custom_getline function */
-
-        if (input == NULL) {
+        if (fgets(input, MAX_INPUT_SIZE, stdin) == NULL) {
             printf("\n");
             break; /* Handle end-of-file condition (Ctrl+D) */
         }
@@ -122,8 +118,6 @@ int main(void) {
                 }
             }
         }
-
-        free(input);
     }
 
     return 0;
