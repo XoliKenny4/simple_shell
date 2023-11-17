@@ -21,7 +21,7 @@ void execute_command(char *args[]) {
 
     if (pid == 0) {
         /* Child process */
-        if (execve(args[0], args, NULL) == -1) {
+        if (execvp(args[0], args) == -1) {
             perror(args[0]);  /* Use the program name for the error message */
             exit(EXIT_FAILURE);
         }
