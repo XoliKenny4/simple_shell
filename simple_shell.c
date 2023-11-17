@@ -8,33 +8,66 @@
 #define MAX_ARGS 64
 
 void display_prompt(void) {
-    printf("#cisfun$ ");
+    printf(":) ");
 }
 
 void execute_command(char *args[]) {
-    pid_t pid = fork();
+    pid_t pid;
 
-    if (pid == -1) {
-        perror("fork");
-        exit(EXIT_FAILURE);
-    }
+    /* Check if the command exists in PATH */
+    char *path = getenv("PATH");
+    char *path_copy = strdup(path);
+    char *dir = strtok(path_copy, ":");
 
-    if (pid == 0) {
-        /* Child process */
-        if (execvp(args[0], args) == -1) {
-            perror(args[0]);  /* Use the program name for the error message */
+    while (dir != NULL) {
+        /* Construct the full path to the executable */
+        char *full_path = malloc(strlen(dir) + strlen(args[0]) + 2);
+        if (full_path == NULL) {
+            perror("malloc");
             exit(EXIT_FAILURE);
         }
-    } else {
-        /* Parent process */
-        int status;
-        waitpid(pid, &status, 0);
 
-        if (WIFSIGNALED(status) && WTERMSIG(status) == SIGINT) {
-            /* Handle Ctrl+C */
-            printf("\n");
+        sprintf(full_path, "%s/%s", dir, args[0]);
+
+        if (access(full_path, X_OK) == 0) {
+            /* Execute the command */
+            pid = fork();
+
+            if (pid == -1) {
+                perror("fork");
+                exit(EXIT_FAILURE);
+            }
+
+            if (pid == 0) {
+                /* Child process */
+                if (execvp(full_path, args) == -1) {
+                    perror(args[0]);  /* Use the program name for the error message */
+                    exit(EXIT_FAILURE);
+                }
+            } else {
+                /* Parent process */
+                int status;
+                waitpid(pid, &status, 0);
+
+                if (WIFSIGNALED(status) && WTERMSIG(status) == SIGINT) {
+                    /* Handle Ctrl+C */
+                    printf("\n");
+                }
+            }
+
+            free(full_path);
+            free(path_copy);
+            return;
         }
+
+        free(full_path);
+        dir = strtok(NULL, ":");
     }
+
+    free(path_copy);
+
+    /* If the loop completes, the command was not found */
+    fprintf(stderr, "./shell: %s: command not found\n", args[0]);
 }
 
 int main(void) {
@@ -67,7 +100,9 @@ int main(void) {
 
             args[i] = NULL; /* Set the last element to NULL */
 
-            execute_command(args);
+            if (args[0] != NULL) {
+                execute_command(args);
+            }
         }
     }
 
