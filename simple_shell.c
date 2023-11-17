@@ -21,8 +21,8 @@ void execute_command(char *args[]) {
 
     if (pid == 0) {
         /* Child process */
-        if (execvp(args[0], args) == -1) {
-            perror("shell");
+        if (execve(args[0], args, NULL) == -1) {
+            perror(args[0]);  // Use the program name for the error message
             exit(EXIT_FAILURE);
         }
     } else {
@@ -117,7 +117,7 @@ int main(void) {
 
                 if (!command_found) {
                     /* Command not found */
-                    fprintf(stderr, "./shell: 1: %s: not found\n", args[0]);
+                    fprintf(stderr, "%s: 1: %s: not found\n", args[0], args[0]);
                 }
             }
         }
