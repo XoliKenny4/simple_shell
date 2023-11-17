@@ -8,7 +8,7 @@
 #define MAX_ARGS 64
 
 void display_prompt(void) {
-    printf("$ ");
+    printf("#cisfun$ ");
 }
 
 void execute_command(char *args[]) {
@@ -88,6 +88,8 @@ int main(void) {
                 char *path_copy = strdup(path);
                 char *dir = strtok(path_copy, ":");
 
+                int command_found = 0;
+
                 while (dir != NULL) {
                     /* Construct the full path to the executable */
                     char *full_path = malloc(strlen(dir) + strlen(args[0]) + 2);
@@ -103,6 +105,7 @@ int main(void) {
                         args[0] = full_path;
                         execute_command(args);
                         free(full_path);
+                        command_found = 1;
                         break;
                     }
 
@@ -112,9 +115,9 @@ int main(void) {
 
                 free(path_copy);
 
-                if (dir == NULL) {
+                if (!command_found) {
                     /* Command not found */
-                    fprintf(stderr, "./shell: %s: command not found\n", args[0]);
+                    fprintf(stderr, "./shell: 1: %s: not found\n", args[0]);
                 }
             }
         }
